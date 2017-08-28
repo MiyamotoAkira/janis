@@ -47,4 +47,14 @@
     (let [changed-options (janis/process-options {:location "test"})]
       (is (= "test" (:location changed-options))))))
 
+(deftest retrieve-table-setups
+  (let [files ["file1"]]
+    (testing "single table just name"
+      (with-redefs [janis/read-file (fn [file] {:name "table-name"})]
+        (let [tables (janis/retrieve-tables files)]
+          (is (= 1 (count tables))))))
+    (testing "single table with all options")
+    (testing "multiple tables")
+    (testing "table with improvements")))
+
 
