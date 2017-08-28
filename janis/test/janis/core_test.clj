@@ -1,7 +1,50 @@
 (ns janis.core-test
   (:require [clojure.test :refer :all]
-            [janis.core :refer :all]))
+            [janis.core :as janis]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest setup
+  (testing "When no options map is passed then it should check for files on resources/janis"
+    (let [checked (atom false)
+          db {}]
+      (with-redefs [janis/check-files
+                    (fn
+                      [location]
+                      (cond
+                        (= location "resources/janis") (reset! checked true)
+                        :else (reset! checked false)))]
+        (janis/setup db)
+        (is @checked))))
+  (testing "When options map is passed without location then it should check for files on resources/janis"
+    (let [checked (atom false)
+          db {}]
+      (with-redefs [janis/check-files
+                    (fn
+                      [location]
+                      (cond
+                        (= location "resources/janis") (reset! checked true)
+                        :else (reset! checked false)))]
+        (janis/setup {} db)
+        (is @checked))))
+
+  (testing "When options map is passed with location then it should check for files on location"
+    (let [file_location "location"
+          checked (atom false)
+          db {}]
+      (with-redefs [janis/check-files
+                    (fn
+                      [location]
+                      (cond
+                        (= location file_location) (reset! checked true)
+                        :else (reset! checked false)))]
+        (janis/setup {:location file_location} db)
+        (is @checked)))))
+
+(deftest process-options
+  (testing "when empty options pased should return base options"
+    (let [changed-options (janis/process-options {})]
+      (is (= changed-options janis/base-options))))
+  (testing "When options pased should change return options with changes"
+    (let [changed-options (janis/process-options {:location "test"})]
+      (is (= "test" (:location changed-options))))))
+
+
